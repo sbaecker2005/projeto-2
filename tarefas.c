@@ -31,29 +31,28 @@ ERROS criar(Tarefa tarefas[], int *pos) {
   return OK;
 }
 
-ERROS deletar(Tarefa tarefas[], int *pos){
-    // teste se existem tarefas
-    if(*pos == 0)
-        return SEM_TAREFAS;
+ERROS deletar(Tarefa tarefas[], int *pos) {
+  if (*pos == 0)
+    return SEM_TAREFAS;
 
-    // verifica se a tarefa escolhida existe
-    int pos_deletar;
-    printf("Entre com a posicao da tarefa a ser deletada: ");
-    scanf("%d", &pos_deletar);
-    pos_deletar--; // garantir posicao certa no array
-    if(pos_deletar >= *pos || pos_deletar < 0)
-        return NAO_ENCONTRADO;
+  int pos_deletar;
+  printf("Entre com a posicao da tarefa a ser deletada: ");
+  scanf("%d", &pos_deletar);
+  pos_deletar--;
+  if (pos_deletar >= *pos || pos_deletar < 0)
+    return NAO_ENCONTRADO;
 
-    for(int i = pos_deletar; i < *pos; i++){
-        tarefas[i].prioridade = tarefas[i+1].prioridade;
-        strcpy(tarefas[i].categoria, tarefas[i+1].categoria);
-        strcpy(tarefas[i].descricao,  tarefas[i+1].descricao);
-    }
+  for (int i = pos_deletar; i < *pos; i++) {
+    tarefas[i].prioridade = tarefas[i + 1].prioridade;
+    strcpy(tarefas[i].categoria, tarefas[i + 1].categoria);
+    strcpy(tarefas[i].descricao, tarefas[i + 1].descricao);
+  }
 
-    *pos = *pos - 1;
+  *pos = *pos - 1;
 
-    return OK;
+  return OK;
 }
+
 
 ERROS listar(Tarefa tarefas[], int *pos){
     if(*pos == 0)
