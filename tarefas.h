@@ -1,30 +1,21 @@
 #ifndef TAREFAS_H
 #define TAREFAS_H
 
-#define TAMANHO_CATEGORIA 100
-#define TAMANHO_DESCRICAO 300
-#define TOTAL 100
-
-#include <stdio.h>
+#define TAM_CATEGORIA 50
+#define TAM_DESCRICAO 100
 
 typedef struct {
+    char categoria[TAM_CATEGORIA];
+    char descricao[TAM_DESCRICAO];
     int prioridade;
-    char categoria[TAMANHO_CATEGORIA];
-    char descricao[TAMANHO_DESCRICAO];
-    char estado[20]; 
 } Tarefa;
 
-typedef enum {OK, MAX_TAREFA, SEM_TAREFAS, NAO_ENCONTRADO, ABRIR, FECHAR, ESCREVER, LER, PRIORIDADE_INVALIDA, OPERACAO_INVALIDA} ERROS;
+void remover_quebra_linha(char *str);
+void criar_tarefa(Tarefa *tarefa, const char *categoria, const char *descricao, int prioridade);
+void listar_tarefas(Tarefa *tarefas, int num_tarefas, const char *categoria);
+void salvar_tarefas_bin(Tarefa *tarefas, int num_tarefas, const char *nome_arquivo);
+int carregar_tarefas_bin(Tarefa *tarefas, const char *nome_arquivo);
+void deletar_tarefa(Tarefa *tarefas, int *num_tarefas, const char *categoria, const char *descricao);
+void exportar_tarefas_txt(Tarefa *tarefas, int num_tarefas, const char *categoria, const char *nome_arquivo);
 
-typedef ERROS (*funcao)(Tarefa[], int*);
-
-ERROS criar(Tarefa tarefas[], int *pos);
-ERROS deletar(Tarefa tarefas[], int *pos);
-ERROS listar(Tarefa tarefas[], int *pos);
-ERROS exportar(Tarefa tarefas[], int *pos);
-
-ERROS gerenciarArquivo(Tarefa tarefas[], int *pos, char* nomeArquivo, int operacao);
-
-void clearBuffer();
-
-#endif
+#endif 
