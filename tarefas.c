@@ -1,7 +1,6 @@
-#include "tarefas.h"
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
+#include "tarefas.h"
 
 void remover_quebra_linha(char *str) {
     size_t len = strlen(str);
@@ -11,59 +10,48 @@ void remover_quebra_linha(char *str) {
 }
 
 void criar_tarefa(Tarefa *tarefa, const char *categoria, const char *descricao, int prioridade) {
-    strncpy(tarefa->categoria, categoria, TAM_CATEGORIA);
-    remover_quebra_linha(tarefa->categoria);
-
-    strncpy(tarefa->descricao, descricao, TAM_DESCRICAO);
-    remover_quebra_linha(tarefa->descricao);
-
-    if (prioridade < 1) {
-        tarefa->prioridade = 1;
-    } else if (prioridade > 10) {
-        tarefa->prioridade = 10;
-    } else {
-        tarefa->prioridade = prioridade;
-    }
+    strncpy(tarefa->categoria, categoria, TAM_CATEGORIA - 1);
+    tarefa->categoria[TAM_CATEGORIA - 1] = '\0';
+    strncpy(tarefa->descricao, descricao, TAM_DESCRICAO - 1);
+    tarefa->descricao[TAM_DESCRICAO - 1] = '\0';
+    tarefa->prioridade = (prioridade >= 1 && prioridade <= 10) ? prioridade : 1;
 }
 
 void listar_tarefas(Tarefa *tarefas, int num_tarefas, const char *categoria) {
     int found = 0;
     for (int i = 0; i < num_tarefas; i++) {
-        if (categoria == NULL || strlen(categoria) == 0 || strcmp(tarefas[i].categoria, categoria) == 0) {
-            printf("Categoria: %s, Descrição: %s, Prioridade: %d\n", tarefas[i].categoria, tarefas[i].descricao, tarefas[i].prioridade);
+        if (strlen(categoria) == 0 || strcmp(tarefas[i].categoria, categoria) == 0) {
+            printf("Categoria: %s\n", tarefas[i].categoria);
+            printf("Descrição: %s\n", tarefas[i].descricao);
+            printf("Prioridade: %d\n", tarefas[i].prioridade);
             found = 1;
         }
     }
     if (!found) {
-        printf("Nenhuma tarefa encontrada para a categoria '%s'\n", categoria);
+        printf("Nenhuma tarefa encontrada.\n");
     }
 }
 
-void salvar_tarefas_bin(Tarefa *tarefas, int num_tarefas, const char *nome_arquivo) {
-    FILE *file = fopen(nome_arquivo, "wb");
-    if (!file) {
-        perror("Erro ao abrir o arquivo para salvar");
+void exportar_tarefas_txt(Tarefa *tarefas, int num_tarefas, const char *categoria) {
+    FILE *file = fopen("tarefas.txt", "w");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo para exportação.\n");
         return;
     }
-
-    fwrite(tarefas, sizeof(Tarefa), num_tarefas, file);
-    fclose(file);
-}
-
-int carregar_tarefas_bin(Tarefa *tarefas, const char *nome_arquivo) {
-    FILE *file = fopen(nome_arquivo, "rb");
-    if (!file) {
-        perror("Erro ao abrir o arquivo para carregar");
-        return 0;
+    int found = 0;
+    for (int i = 0; i < num_tarefas; i++) {
+        if (strlen(categoria) == 0 || strcmp(tarefas[i].categoria, categoria) == 0) {
+            fprintf(file, "Categoria: %s\n", tarefas[i].categoria);
+            fprintf(file, "Descrição: %s\n", tarefas[i].descricao);
+            fprintf(file, "Prioridade: %d\n", tarefas[i].prioridade);
+            fprintf(file, "-------------------\n");
+            found = 1;
+        }
     }
-
-    int num_tarefas = 0;
-    while (fread(&tarefas[num_tarefas], sizeof(Tarefa), 1, file)) {
-        num_tarefas++;
+    if (!found) {
+        fprintf(file, "Nenhuma tarefa encontrada.\n");
     }
-
     fclose(file);
-    return num_tarefas;
 }
 
 void deletar_tarefa(Tarefa *tarefas, int *num_tarefas, const char *categoria, const char *descricao) {
@@ -85,23 +73,27 @@ void deletar_tarefa(Tarefa *tarefas, int *num_tarefas, const char *categoria, co
     }
 }
 
-void exportar_tarefas_txt(Tarefa *tarefas, int num_tarefas, const char *categoria, const char *nome_arquivo) {
-    FILE *file = fopen(nome_arquivo, "w");
-    if (!file) {
-        perror("Erro ao abrir o arquivo para exportar");
+int carregar_tarefas_bin(Tarefa *tarefas, const char *nome_arquivo) {
+    FILE *file = fopen(nome_arquivo, "rb");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo para leitura.\n");
+        return 0;
+    }
+    int num_tarefas = fread(tarefas, sizeof(Tarefa), MAX_TAREFAS, file);
+    fclose(file);
+    return num_tarefas;
+}
+
+void salvar_tarefas_bin(Tarefa *tarefas, int num_tarefas, const char *nome_arquivo) {
+    FILE *file = fopen(nome_arquivo, "wb");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo para escrita.\n");
         return;
     }
-
-    int found = 0;
-    for (int i = 0; i < num_tarefas; i++) {
-        if (categoria == NULL || strlen(categoria) == 0 || strcmp(tarefas[i].categoria, categoria) == 0) {
-            fprintf(file, "Categoria: %s, Descrição: %s, Prioridade: %d\n", tarefas[i].categoria, tarefas[i].descricao, tarefas[i].prioridade);
-            found = 1;
-        }
-    }
-    if (!found) {
-        fprintf(file, "Nenhuma tarefa encontrada para a categoria '%s'\n", categoria);
-    }
-
+    fwrite(tarefas, sizeof(Tarefa), num_tarefas, file);
     fclose(file);
+}
+
+void atualizar_arquivo_txt(Tarefa *tarefas, int num_tarefas) {
+    exportar_tarefas_txt(tarefas, num_tarefas, "");
 }
